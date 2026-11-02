@@ -4,7 +4,7 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
   if nargin < 5 || isempty(t0), t0 = 1e-2; end
 
   % Number of Step comparsions!
-  N = 7;
+  N = 8;
 
   [n, p] = size(X);
   y = y(:);
@@ -18,7 +18,15 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
         b0 = 0;
 
         for k = 1:iters
-            steps = [1, k^(1/5), k^(1/4), k^(1/3), sqrt(k), k, k^2];
+            steps = [5e-1, 1, k^(1/5), k^(1/4), k^(1/3), sqrt(k), k, -1];
+
+            if k == 1
+              f_best = f(beta, b0);
+            else
+              f_best = min(f_best, f(beta, b0));
+            end
+
+
             % margin violators I = {i : y_i (x_i'beta + b0) < 1}
             act = (y .* (X*beta + b0)) < 1;
 
@@ -26,8 +34,14 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
             g_beta = beta - C * (X(act,:)' * y(act));
             g_b0 = -C * sum(y(act));
 
-            % diminishing step
-            t = t0 / steps(i);
+            if (steps(i) == -1)
+                % Polyak Step
+                t = (f(beta, b0) - f_best) / (norm([g_beta; g_b0], 2)^2);
+            else
+                % diminishing step
+                t = t0 / steps(i);
+            end
+
             beta = beta - t*g_beta;
             b0 = b0 - t*g_b0;
 
@@ -38,6 +52,7 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
     end
 end
 % Synthetic data
+clear;
 n = 200; p = 2;
 X = [randn(n/2,p) + 2; randn(n/2,p) - 2];
 y = [ones(n/2,1); -ones(n/2,1)];
@@ -48,9 +63,14 @@ plot(fhist(3,:) + eps, 'color', 'k');
 plot(fhist(4,:) + eps, 'color', 'c');
 plot(fhist(5,:) + eps, 'color', 'g');
 plot(fhist(6,:) + eps, 'color', [1 0.5 0]);
-plot(fhist(7,:) + eps, 'color', 'r'); hold off;
+plot(fhist(7,:) + eps, 'color', [0 0.5 1]);
+plot(fhist(8,:) + eps, 'color', 'r'); hold off;
+legend("5e-1", "1", "k^{1/5}", "k^{1/4}", "k^{1/3}", "k^{1/2}", "k", "Polyak");
+title("Synthetic: Binary SVM, Subgradient Method");
+hold off;
 
 % w3a data
+clear;
 [y, X] = load_libsvm('w3a', 300);  % 300 = number of features in w3a
 [beta, b0, fhist] = svm_subgrad(X, y, 1, 5e+2, 1e-3);
 plot(fhist(1,:) + eps, 'color', 'b'); xlabel('k'); ylabel('f'); hold on;
@@ -59,4 +79,8 @@ plot(fhist(3,:) + eps, 'color', 'k');
 plot(fhist(4,:) + eps, 'color', 'c');
 plot(fhist(5,:) + eps, 'color', 'g');
 plot(fhist(6,:) + eps, 'color', [1 0.5 0]);
-plot(fhist(7,:) + eps, 'color', 'r'); hold off;
+plot(fhist(7,:) + eps, 'color', [0 0.5 1]);
+plot(fhist(8,:) + eps, 'color', 'r'); hold off;
+legend("5e-1", "1", "k^{1/5}", "k^{1/4}", "k^{1/3}", "k^{1/2}", "k", "Polyak");
+title("w3a: Binary SVM, Subgradient Method");
+hold off;
