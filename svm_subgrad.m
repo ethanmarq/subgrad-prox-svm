@@ -20,13 +20,6 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
         for k = 1:iters
             steps = [5e-1, 1, k^(1/5), k^(1/4), k^(1/3), sqrt(k), k, -1];
 
-            if k == 1
-              f_best = f(beta, b0);
-            else
-              f_best = min(f_best, f(beta, b0));
-            end
-
-
             % margin violators I = {i : y_i (x_i'beta + b0) < 1}
             act = (y .* (X*beta + b0)) < 1;
 
@@ -36,7 +29,7 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
 
             if (steps(i) == -1)
                 % Polyak Step
-                t = (f(beta, b0) - f_best) / (norm([g_beta; g_b0], 2)^2);
+                t = f(beta, b0) / (norm([g_beta; g_b0], 2)^2 + eps);
             else
                 % diminishing step
                 t = t0 / steps(i);
@@ -80,7 +73,7 @@ plot(fhist(4,:) + eps, 'color', 'c');
 plot(fhist(5,:) + eps, 'color', 'g');
 plot(fhist(6,:) + eps, 'color', [1 0.5 0]);
 plot(fhist(7,:) + eps, 'color', [0 0.5 1]);
-plot(fhist(8,:) + eps, 'color', 'r'); hold off;
+plot(cummin(fhist(8,:)) + eps, 'color', 'r'); hold off;
 legend("5e-1", "1", "k^{1/5}", "k^{1/4}", "k^{1/3}", "k^{1/2}", "k", "Polyak");
 title("w3a: Binary SVM, Subgradient Method");
 hold off;
