@@ -34,18 +34,33 @@ function [beta, fhist] = prox_lasso(X, y, lambda, iters, t0)
 
       fhist(2, k) = f(beta);
     end
+
+
+%    % Stochastic Subgradient Method
+%    beta = zeros(p, 1);
+%
+%    for k = 1:iters
+%      i = randi(n-5);
+%      t = t0 / sqrt(k);
+%      g = -(n-5) * X(i:i+5,:)'*(y(i:i+5) - X(i:i+5,:)*beta) + lambda*sign(beta);
+%
+%      beta = beta - t*g;
+%
+%      fhist(3, k) = f(beta);
+%    end
 end
 
 % Synthetic data
-clear;
-n = 200; p = 2;
-X = [randn(n/2,p) + 2; randn(n/2,p) - 2];
-y = [ones(n/2,1); -ones(n/2,1)];
-[beta, fhist] = prox_lasso(X, y, 1, 5e+2, 1 / norm(X)^2);
-title("Synthetic: Lasso Least Squares, Proximal Descent"); xlabel('k'); ylabel('f');
-plot(fhist(1, :) + eps, 'color', 'b'); hold on;
-plot(fhist(2, :) + eps, 'color', 'm');
-legend("Prox", "Subgrad"); hold off;
+%clear;
+%n = 200; p = 2;
+%X = [randn(n/2,p) + 2; randn(n/2,p) - 2];
+%y = [ones(n/2,1); -ones(n/2,1)];
+%[beta, fhist] = prox_lasso(X, y, 1, 5e+2, 1 / norm(X)^2);
+%title("Synthetic: Lasso Least Squares, Proximal Descent"); xlabel('k'); ylabel('f');
+%plot(fhist(1, :) + eps, 'color', 'b'); hold on;
+%plot(fhist(2, :) + eps, 'color', 'm');
+%plot(fhist(3, :) + eps, 'color', 'k');
+%legend("Prox", "Subgrad", "Stochastic Subgrad"); hold off;
 
 % w3a data
 clear;
