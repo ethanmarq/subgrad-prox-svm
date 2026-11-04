@@ -5,26 +5,23 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
 
     % N = length(steps)
     N = 8;
-
     [n, p] = size(X);
     y = y(:);
 
     f = @(b, c) 0.5*(b'*b) + C*sum(max(0, 1 - y.*(X*b + c)));
     fhist = zeros(N, iters, 1);
 
-    % Loop Through Each Step Size
+    % Step Comparison
     for i = 1:N
         beta = zeros(p, 1);
         b0 = 0;
 
-        % Subgradient Method on SVM
+        % Subgradient Method
         for k = 1:iters
             steps = [5e-1, 1, k^(1/5), k^(1/4), k^(1/3), sqrt(k), k, -1];
 
-            % margin violators I = {i : y_i (x_i'beta + b0) < 1}
-            act = (y .* (X*beta + b0)) < 1;
+            act = (y .* (X*beta + b0)) < 1; % margin violators I = {i : y_i (x_i'beta + b0) < 1}
 
-            % subgradients
             g_beta = beta - C * (X(act,:)' * y(act));
             g_b0 = -C * sum(y(act));
 
@@ -39,7 +36,6 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
             beta = beta - t*g_beta;
             b0 = b0 - t*g_b0;
 
-            % Track Iterate
             fhist(i, k) = f(beta, b0);
         end
     end
