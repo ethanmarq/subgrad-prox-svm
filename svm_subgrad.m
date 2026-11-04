@@ -1,29 +1,30 @@
 function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
-  if nargin < 3 || isempty(C), C = 1; end
-  if nargin < 4 || isempty(iters), iters = 5000; end
-  if nargin < 5 || isempty(t0), t0 = 1e-2; end
+    if nargin < 3 || isempty(C), C = 1; end
+    if nargin < 4 || isempty(iters), iters = 5000; end
+    if nargin < 5 || isempty(t0), t0 = 1e-2; end
 
-  % Number of Step comparsions!
-  N = 8;
+    % N = length(steps)
+    N = 8;
 
-  [n, p] = size(X);
-  y = y(:);
+    [n, p] = size(X);
+    y = y(:);
 
-  f = @(b, c) 0.5*(b'*b) + C*sum(max(0, 1 - y.*(X*b + c)));
-
+    f = @(b, c) 0.5*(b'*b) + C*sum(max(0, 1 - y.*(X*b + c)));
     fhist = zeros(N, iters, 1);
 
+    % Loop Through Each Step Size
     for i = 1:N
         beta = zeros(p, 1);
         b0 = 0;
 
+        % Subgradient Method on SVM
         for k = 1:iters
             steps = [5e-1, 1, k^(1/5), k^(1/4), k^(1/3), sqrt(k), k, -1];
 
             % margin violators I = {i : y_i (x_i'beta + b0) < 1}
             act = (y .* (X*beta + b0)) < 1;
 
-            % subgrad
+            % subgradients
             g_beta = beta - C * (X(act,:)' * y(act));
             g_b0 = -C * sum(y(act));
 
@@ -40,10 +41,10 @@ function [beta, b0, fhist] = svm_subgrad(X, y, C, iters, t0)
 
             % Track Iterate
             fhist(i, k) = f(beta, b0);
-
         end
     end
 end
+
 % Synthetic data
 clear;
 n = 200; p = 2;
